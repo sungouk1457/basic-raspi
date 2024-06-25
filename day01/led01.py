@@ -1,7 +1,7 @@
 import RPi.GPIO as GPIO
 import time
 
-led = 21
+led = 16
 
 #GPIO를 BCM모드로 설정
 GPIO.setmode(GPIO.BCM)
