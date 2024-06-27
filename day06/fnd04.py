@@ -40,10 +40,8 @@ try:
 
         for i in range(3, -1, -1):
             fndOut(int(d[i]), i) #자리수와 값을 전달
-            time.sleep(0.001)
-            if i == -1:
-                i = 3
-        if count >9999:
-            count = 0
+            time.sleep(0.0001)
+        if count==9999:
+            count = -1
 except KeyboardInterrupt:
     GPIO.cleanup()
