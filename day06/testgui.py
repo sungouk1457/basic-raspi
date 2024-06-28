@@ -8,7 +8,7 @@ import time
 # FND 데이터와 핀 설정
 fndDatas = [0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x07, 0x7f, 0x6f]
 fndSegs = [22, 4, 12, 16, 20, 27, 25]
-fndSels = [21, 17, 5, 6]
+fndSels = [24, 17, 5, 6]
 red = 26
 blue = 19
 green = 13
@@ -21,11 +21,11 @@ GPIO.setup(green, GPIO.OUT)
 
 for fndSeg in fndSegs:
     GPIO.setup(fndSeg, GPIO.OUT)
-    GPIO.output(fndSeg, GPIO.LOW)
+    GPIO.output(fndSeg, 0)
 
 for fndSel in fndSels:
     GPIO.setup(fndSel, GPIO.OUT)
-    GPIO.output(fndSel, GPIO.HIGH)
+    GPIO.output(fndSel, 1)
 
 # UI 파일 로드
 form_class = uic.loadUiType("./testgui.ui")[0]
@@ -138,13 +138,15 @@ class WindowClass(QMainWindow, form_class):
         event.accept()
 
 def fndOut(data, sel):
-    # 모든 FND 선택 핀을 끔
-    for j in range(0, 4):
-        GPIO.output(fndSels[j], GPIO.HIGH)
+    for i in range(0,7):
+            GPIO.output(fndSegs[i], fndDatas[data] & (0x01 << i))
+            for j in range(0, 4): #표시할 자리수의 fnd만 on
+                if j == sel:
+                    GPIO.output(fndSels[j], 0)
+                else:
+                    GPIO.output(fndSels[j], 1)
 
-    # 데이터에 해당하는 FND 출력 설정
-    for i in range(0, 7):
-        GPIO.output(fndSegs[i], fndDatas[data] & (0x01 << i))
+   
 
     # 선택된 FND 선택 핀만 켬
     GPIO.output(fndSels[sel], GPIO.LOW)
