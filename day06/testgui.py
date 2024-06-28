@@ -5,10 +5,10 @@ from PyQt5.QtCore import QTimer
 import RPi.GPIO as GPIO
 import time
 
-# FND �����Ϳ� �� ����
-fndDatas = [0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x07, 0x7f, 0x6f]
+# FND 데이터와 핀 설정
+fndDatas = [0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x27, 0x7f, 0x6f]
 fndSegs = [22, 4, 12, 16, 20, 27, 25]
-fndSels = [21, 17, 5, 6]
+fndSels = [24, 17, 5, 6]
 red = 26
 blue = 19
 green = 13
@@ -27,7 +27,6 @@ for fndSel in fndSels:
     GPIO.setup(fndSel, GPIO.OUT)
     GPIO.output(fndSel, GPIO.HIGH)
 
-# UI ���� �ε�
 form_class = uic.loadUiType("./testgui.ui")[0]
 
 class WindowClass(QMainWindow, form_class):
@@ -40,7 +39,8 @@ class WindowClass(QMainWindow, form_class):
         self.fnd_timer.timeout.connect(self.updateFND)
         self.led_timer = QTimer(self)
         self.led_timer.timeout.connect(self.changeLED)
-        self.led_state = 0  # �ʱ� ����: Red LED
+        self.led_state = 0  # 초기 상태: Red LED
+
 
         # ��ư �̺�Ʈ ����
         self.btnstart.clicked.connect(self.startFND)
@@ -53,8 +53,9 @@ class WindowClass(QMainWindow, form_class):
         self.lcdNumber.display(0)
 
         # FND �ʱ� ����
+        # FND 초기 설정
         self.count_fnd = 0
-        self.fnd_running = False  # FND ���� ����
+        self.fnd_running = False  # FND 동작 상태
 
     def startFND(self):
         if not self.fnd_running:
@@ -82,8 +83,9 @@ class WindowClass(QMainWindow, form_class):
         
         for i, d in enumerate([d1, d10, d100, d1000]):
             fndOut(d, i)
-            time.sleep(0.001)  # ������ �ð� ���� ����
-            fndOut(0x00, i)  # FND �ʱ�ȭ
+
+            time.sleep(0.001)  # 적절한 시간 지연 설정
+            fndOut(0x00, i)  # FND 초기화
 
     def startLED(self):
         self.led_timer.start(1000)
@@ -132,14 +134,16 @@ class WindowClass(QMainWindow, form_class):
         event.accept()
 
 def fndOut(data, sel):
+    # 모든 FND 선택 핀을 끔
+    for j in range(0, 4):
+        GPIO.output(fndSels[j], GPIO.HIGH)
+
+    # 데이터에 해당하는 FND 출력 설정
     for i in range(0, 7):
         GPIO.output(fndSegs[i], fndDatas[data] & (0x01 << i))
-    
-    for j in range(0, 4):
-        if j == sel:
-            GPIO.output(fndSels[j], GPIO.LOW)
-        else:
-            GPIO.output(fndSels[j], GPIO.HIGH)
+
+    # 선택된 FND 선택 핀만 켬
+    GPIO.output(fndSels[sel], GPIO.LOW)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
