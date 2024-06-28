@@ -6,7 +6,7 @@ import RPi.GPIO as GPIO
 import time
 
 # FND 숫자 데이터
-fndDatas = [0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x07, 0x7f, 0x6f]
+fndDatas = [0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x27, 0x7f, 0x6f]
 fndSegs = [22, 4, 12, 16, 20, 27, 25]
 fndSels = [24, 17, 5, 6]
 red = 26
@@ -59,7 +59,7 @@ class WindowClass(QMainWindow, form_class):
     def startFND(self):
         if not self.fnd_running:
             self.fnd_running = True
-            self.fnd_timer.start(1000)  # 1초마다 FND 업데이트
+            self.fnd_timer.start(1)  # 1초마다 FND 업데이트
 
     def stopFND(self):
         self.fnd_running = False
@@ -86,7 +86,6 @@ class WindowClass(QMainWindow, form_class):
         for i, d in enumerate([d1, d10, d100, d1000]):
             fndOut(int(d), i)
             time.sleep(0.001)  # 딜레이 설정
-            fndOut(0x00, i)  # FND 초기화
 
     def startLED(self):
         self.led_timer.start(1000)
