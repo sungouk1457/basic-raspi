@@ -64,12 +64,7 @@ class WindowClass(QMainWindow, form_class):
     def stopFND(self):
         self.fnd_running = False
         self.fnd_timer.stop()
-        fndOut(0x00, 0)
-        fndOut(0x00, 1)
-        fndOut(0x00, 2)
-        fndOut(0x00, 3)
-        self.count_fnd = 0
-        self.displayLCD(0)
+        self.clearFND()  # FND 초기화
 
     def updateFND(self):
         if self.fnd_running:
@@ -90,6 +85,10 @@ class WindowClass(QMainWindow, form_class):
             fndOut(d, i)
             time.sleep(0.001)  # 딜레이 설정
             fndOut(0x00, i)  # FND 초기화
+
+    def clearFND(self):
+        for i in range(4):
+            fndOut(0x00, i)
 
     def startLED(self):
         self.led_timer.start(1000)
