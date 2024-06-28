@@ -59,14 +59,12 @@ class WindowClass(QMainWindow, form_class):
     def startFND(self):
         if not self.fnd_running:
             self.fnd_running = True
-            self.fnd_timer.start(1)  # 1초마다 FND 업데이트
+            self.fnd_timer.start(1000)  # 1초마다 FND 업데이트
 
     def stopFND(self):
         self.fnd_running = False
         self.fnd_timer.stop()
-        self.count_fnd = 0
-        self.displayFND(self.count_fnd)
-        self.displayLCD(self.count_fnd)
+        self.clearFND()
 
     def updateFND(self):
         if self.fnd_running:
@@ -86,6 +84,12 @@ class WindowClass(QMainWindow, form_class):
         for i, d in enumerate([d1, d10, d100, d1000]):
             fndOut(int(d), i)
             time.sleep(0.001)  # 딜레이 설정
+
+    def clearFND(self):
+        for sel in fndSels:
+            GPIO.output(sel, GPIO.HIGH)
+        for seg in fndSegs:
+            GPIO.output(seg, GPIO.LOW)
 
     def startLED(self):
         self.led_timer.start(1000)
@@ -122,12 +126,7 @@ class WindowClass(QMainWindow, form_class):
         GPIO.cleanup()
         self.lcdNumber.display(0)
         self.count_fnd = 0
-        for fndSeg in fndSegs:
-            GPIO.setup(fndSeg, GPIO.OUT)
-            GPIO.output(fndSeg, GPIO.LOW)
-        for fndSel in fndSels:
-            GPIO.setup(fndSel, GPIO.OUT)
-            GPIO.output(fndSel, GPIO.HIGH)
+        self.clearFND()
 
     def closeEvent(self, event):
         self.cleanup()
