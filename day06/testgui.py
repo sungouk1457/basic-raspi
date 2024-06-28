@@ -25,7 +25,7 @@ for fndSeg in fndSegs:
 
 for fndSel in fndSels:
     GPIO.setup(fndSel, GPIO.OUT)
-    GPIO.output(fndSel, 1)
+    GPIO.output(fndSel, GPIO.LOW)  # 초기화할 때 HIGH가 아니라 LOW로 설정
 
 # UI 파일 로드
 form_class = uic.loadUiType("./testgui.ui")[0]
