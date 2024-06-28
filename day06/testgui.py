@@ -6,14 +6,14 @@ import RPi.GPIO as GPIO
 import time
 
 # FND 데이터와 핀 설정
-fndDatas = [0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x27, 0x7f, 0x6f]
+fndDatas = [0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x07, 0x7f, 0x6f]
 fndSegs = [22, 4, 12, 16, 20, 27, 25]
-fndSels = [24, 17, 5, 6]
+fndSels = [21, 17, 5, 6]
 red = 26
 blue = 19
 green = 13
 
-# GPIO ����
+# GPIO 설정
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(red, GPIO.OUT)
 GPIO.setup(blue, GPIO.OUT)
@@ -27,6 +27,7 @@ for fndSel in fndSels:
     GPIO.setup(fndSel, GPIO.OUT)
     GPIO.output(fndSel, GPIO.HIGH)
 
+# UI 파일 로드
 form_class = uic.loadUiType("./testgui.ui")[0]
 
 class WindowClass(QMainWindow, form_class):
@@ -34,25 +35,23 @@ class WindowClass(QMainWindow, form_class):
         super().__init__()
         self.setupUi(self)
 
-        # QTimer ����
+        # QTimer 설정
         self.fnd_timer = QTimer(self)
         self.fnd_timer.timeout.connect(self.updateFND)
         self.led_timer = QTimer(self)
         self.led_timer.timeout.connect(self.changeLED)
         self.led_state = 0  # 초기 상태: Red LED
 
-
-        # ��ư �̺�Ʈ ����
+        # 버튼 이벤트 연결
         self.btnstart.clicked.connect(self.startFND)
         self.btnstop.clicked.connect(self.stopFND)
         self.btn_on.clicked.connect(self.startLED)
         self.btn_off.clicked.connect(self.stopLED)
         self.btncleanup.clicked.connect(self.cleanup)
 
-        # LCD �ʱ�ȭ
+        # LCD 초기화
         self.lcdNumber.display(0)
 
-        # FND �ʱ� ����
         # FND 초기 설정
         self.count_fnd = 0
         self.fnd_running = False  # FND 동작 상태
@@ -60,11 +59,17 @@ class WindowClass(QMainWindow, form_class):
     def startFND(self):
         if not self.fnd_running:
             self.fnd_running = True
-            self.fnd_timer.start(1)  # 1ms �������� FND ������Ʈ
+            self.fnd_timer.start(1)  # 1ms 간격으로 FND 업데이트
 
     def stopFND(self):
         self.fnd_running = False
         self.fnd_timer.stop()
+        fndOut(0x00, 0)  # FND 초기화
+        fndOut(0x00, 1)
+        fndOut(0x00, 2)
+        fndOut(0x00, 3)
+        self.count_fnd = 0
+        self.displayLCD(0)
 
     def updateFND(self):
         if self.fnd_running:
@@ -83,7 +88,6 @@ class WindowClass(QMainWindow, form_class):
         
         for i, d in enumerate([d1, d10, d100, d1000]):
             fndOut(d, i)
-
             time.sleep(0.001)  # 적절한 시간 지연 설정
             fndOut(0x00, i)  # FND 초기화
 
