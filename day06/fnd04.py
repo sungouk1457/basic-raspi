@@ -3,8 +3,8 @@ import time
 
 #0~9까지 1byte hex값
 fndDatas = [0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x27, 0x7f, 0x6f]
-fndSegs = [26, 13, 16, 20, 21, 19, 12] #a~g led pin
-fndSels = [25, 27, 22, 6] #fnd 선택pin
+fndSegs = [22, 4, 12, 16, 20, 27, 25]  # a~g LED pin
+fndSels = [21, 17, 5, 6]  # FND ���� pin
 
 count = 0
 #GPIO설정
@@ -40,7 +40,7 @@ try:
 
         for i in range(3, -1, -1):
             fndOut(int(d[i]), i) #자리수와 값을 전달
-            time.sleep(0.0001)
+            time.sleep(0.001)
         if count==9999:
             count = -1
 except KeyboardInterrupt:

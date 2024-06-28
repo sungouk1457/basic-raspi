@@ -4,23 +4,16 @@ from PyQt5 import uic
 from PyQt5.QtCore import QTimer
 import RPi.GPIO as GPIO
 import time
-import threading
 
-# FND 데이터
+# FND �����Ϳ� �� ����
 fndDatas = [0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x07, 0x7f, 0x6f]
-
-# FND 세그먼트 핀
 fndSegs = [22, 4, 12, 16, 20, 27, 25]
-
-# FND 선택 핀
 fndSels = [21, 17, 5, 6]
-
-# LED 핀
 red = 26
 blue = 19
 green = 13
 
-# GPIO 설정
+# GPIO ����
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(red, GPIO.OUT)
 GPIO.setup(blue, GPIO.OUT)
@@ -34,6 +27,7 @@ for fndSel in fndSels:
     GPIO.setup(fndSel, GPIO.OUT)
     GPIO.output(fndSel, GPIO.HIGH)
 
+# UI ���� �ε�
 form_class = uic.loadUiType("./testgui.ui")[0]
 
 class WindowClass(QMainWindow, form_class):
@@ -41,35 +35,31 @@ class WindowClass(QMainWindow, form_class):
         super().__init__()
         self.setupUi(self)
 
-        # QTimer 설정
+        # QTimer ����
         self.fnd_timer = QTimer(self)
         self.fnd_timer.timeout.connect(self.updateFND)
         self.led_timer = QTimer(self)
         self.led_timer.timeout.connect(self.changeLED)
-        self.led_state = 0  # 초기 상태는 Red LED
+        self.led_state = 0  # �ʱ� ����: Red LED
 
-        # 버튼 이벤트 연결
+        # ��ư �̺�Ʈ ����
         self.btnstart.clicked.connect(self.startFND)
         self.btnstop.clicked.connect(self.stopFND)
         self.btn_on.clicked.connect(self.startLED)
         self.btn_off.clicked.connect(self.stopLED)
         self.btncleanup.clicked.connect(self.cleanup)
 
-        # LCD 초기화
+        # LCD �ʱ�ȭ
         self.lcdNumber.display(0)
 
-        # FND 초기화
+        # FND �ʱ� ����
         self.count_fnd = 0
-        self.fnd_running = False  # FND 동작 여부 플래그
-
-        # FND 동작 스레드 시작
-        self.fnd_thread = threading.Thread(target=self.runFND)
-        self.fnd_thread.start()
+        self.fnd_running = False  # FND ���� ����
 
     def startFND(self):
         if not self.fnd_running:
             self.fnd_running = True
-            self.fnd_timer.start(1)  # 1ms 간격으로 FND 업데이트
+            self.fnd_timer.start(1)  # 1ms �������� FND ������Ʈ
 
     def stopFND(self):
         self.fnd_running = False
@@ -91,9 +81,9 @@ class WindowClass(QMainWindow, form_class):
         d1 = num % 10
         
         for i, d in enumerate([d1, d10, d100, d1000]):
-            self.fndOut(d, i)
-            time.sleep(0.0001)
-            self.fndOut(0x00, i)  # FND 초기화
+            fndOut(d, i)
+            time.sleep(0.001)  # ������ �ð� ���� ����
+            fndOut(0x00, i)  # FND �ʱ�ȭ
 
     def startLED(self):
         self.led_timer.start(1000)
@@ -141,41 +131,17 @@ class WindowClass(QMainWindow, form_class):
         self.cleanup()
         event.accept()
 
-    def fndOut(self, data, sel):
-        for i in range(0, 7):
-            GPIO.output(fndSegs[i], fndDatas[data] & (0x01 << i))
-        
-        for j in range(0, 4):
-            if j == sel:
-                GPIO.output(fndSels[j], GPIO.LOW)
-            else:
-                GPIO.output(fndSels[j], GPIO.HIGH)
-
-    # FND 동작 메서드
-    def runFND(self):
-        count = 0
-        try:
-            while True:
-                if self.fnd_running:
-                    count += 1
-                    d1000 = count // 1000
-                    d100 = (count % 1000) // 100
-                    d10 = (count % 100) // 10
-                    d1 = count % 10
-                    d = [d1, d10, d100, d1000]
-
-                    for i in range(3, -1, -1):
-                        self.fndOut(d[i], i)  # FND에 값을 출력
-                        time.sleep(0.001)  # 출력 시간 간격
-
-                    if count == 9999:
-                        count = -1
-                time.sleep(0.001)  # 메인 루프 지연
-        except KeyboardInterrupt:
-            GPIO.cleanup()
+def fndOut(data, sel):
+    for i in range(0, 7):
+        GPIO.output(fndSegs[i], fndDatas[data] & (0x01 << i))
+    
+    for j in range(0, 4):
+        if j == sel:
+            GPIO.output(fndSels[j], GPIO.LOW)
+        else:
+            GPIO.output(fndSels[j], GPIO.HIGH)
 
 if __name__ == "__main__":
-    # PyQt GUI 실행
     app = QApplication(sys.argv)
     myWindow = WindowClass()
     myWindow.show()
