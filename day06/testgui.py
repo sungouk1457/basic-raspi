@@ -59,12 +59,12 @@ class WindowClass(QMainWindow, form_class):
     def startFND(self):
         if not self.fnd_running:
             self.fnd_running = True
-            self.fnd_timer.start(1000)  # 1초마다 FND 업데이트
+            self.fnd_timer.start(1)  # 1초마다 FND 업데이트
 
-    def stopFND(self):
+    def stopFND(self,count_fnd):
         self.fnd_running = False
         self.fnd_timer.stop()
-        self.clearFND()
+        
 
     def updateFND(self):
         if self.fnd_running:
