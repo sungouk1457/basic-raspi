@@ -5,7 +5,7 @@ from PyQt5.QtCore import QTimer
 import RPi.GPIO as GPIO
 import time
 
-# FND 데이터와 핀 설정
+# FND 표시 데이터
 fndDatas = [0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x07, 0x7f, 0x6f]
 fndSegs = [22, 4, 12, 16, 20, 27, 25]
 fndSels = [24, 17, 5, 6]
@@ -52,9 +52,9 @@ class WindowClass(QMainWindow, form_class):
         # LCD 초기화
         self.lcdNumber.display(0)
 
-        # FND 초기 설정
+        # FND 초기화
         self.count_fnd = 0
-        self.fnd_running = False  # FND 동작 상태
+        self.fnd_running = False  # FND 동작 여부
 
     def startFND(self):
         if not self.fnd_running:
@@ -64,7 +64,7 @@ class WindowClass(QMainWindow, form_class):
     def stopFND(self):
         self.fnd_running = False
         self.fnd_timer.stop()
-        fndOut(0x00, 0)  # FND 초기화
+        fndOut(0x00, 0)
         fndOut(0x00, 1)
         fndOut(0x00, 2)
         fndOut(0x00, 3)
@@ -88,7 +88,7 @@ class WindowClass(QMainWindow, form_class):
         
         for i, d in enumerate([d1, d10, d100, d1000]):
             fndOut(d, i)
-            time.sleep(0.001)  # 적절한 시간 지연 설정
+            time.sleep(0.001)  # 딜레이 설정
             fndOut(0x00, i)  # FND 초기화
 
     def startLED(self):
@@ -138,18 +138,14 @@ class WindowClass(QMainWindow, form_class):
         event.accept()
 
 def fndOut(data, sel):
-    for i in range(0,7):
-            GPIO.output(fndSegs[i], fndDatas[data] & (0x01 << i))
-            for j in range(0, 4): #표시할 자리수의 fnd만 on
-                if j == sel:
-                    GPIO.output(fndSels[j], 0)
-                else:
-                    GPIO.output(fndSels[j], 1)
-
-   
-
-    # 선택된 FND 선택 핀만 켬
-    GPIO.output(fndSels[sel], GPIO.LOW)
+    for i in range(0, 7):
+        GPIO.output(fndSegs[i], fndDatas[data] & (0x01 << i))
+    
+    for j in range(0, 4):
+        if j == sel:
+            GPIO.output(fndSels[j], GPIO.LOW)
+        else:
+            GPIO.output(fndSels[j], GPIO.HIGH)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
