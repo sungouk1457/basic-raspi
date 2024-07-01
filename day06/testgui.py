@@ -11,11 +11,13 @@ fndSels = [24, 17, 5, 6]
 red = 26
 blue = 19
 green = 13
+buzzer = 21
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(red, GPIO.OUT)
 GPIO.setup(blue, GPIO.OUT)
 GPIO.setup(green, GPIO.OUT)
+GPIO.setup(buzzer, GPIO.OUT)
 
 for fndSeg in fndSegs:
     GPIO.setup(fndSeg, GPIO.OUT)
@@ -24,6 +26,9 @@ for fndSeg in fndSegs:
 for fndSel in fndSels:
     GPIO.setup(fndSel, GPIO.OUT)
     GPIO.output(fndSel, 1)
+
+Buzz = GPIO.PWM(buzzer, 440)
+Buzz.start(0)
 
 form_class = uic.loadUiType("./testgui.ui")[0]
 
@@ -42,12 +47,15 @@ class WindowClass(QMainWindow, form_class):
         self.btnstop.clicked.connect(self.stopFND)
         self.btn_on.clicked.connect(self.startLED)
         self.btn_off.clicked.connect(self.stopLED)
+        self.btn_buzzeron.clicked.connect(self.startBuzzer)
+        self.btn_buzzeroff.clicked.connect(self.stopBuzzer)
         self.btncleanup.clicked.connect(self.cleanup)
 
         self.lcdNumber.display(0)
 
         self.count_fnd = 0
         self.fnd_running = False
+        self.buzzer_on = False
 
     def startFND(self):
         if not self.fnd_running:
@@ -83,6 +91,21 @@ class WindowClass(QMainWindow, form_class):
             GPIO.output(sel, GPIO.HIGH)
         for seg in fndSegs:
             GPIO.output(seg, GPIO.LOW)
+    
+    def toggleBuzzer(self):
+        if not self.buzzer_on:
+            self.startBuzzer()
+        else:
+            self.stopBuzzer()
+
+    def startBuzzer(self):
+        Buzz.ChangeFrequency(440)  
+        Buzz.ChangeDutyCycle(50)
+        self.buzzer_on = True
+
+    def stopBuzzer(self):
+        Buzz.ChangeDutyCycle(0)
+        self.buzzer_on = True
 
     def startLED(self):
         self.led_timer.start(1000)
